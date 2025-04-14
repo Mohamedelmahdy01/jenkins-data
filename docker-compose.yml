@@ -1,0 +1,35 @@
+services:
+
+  jenkins:
+    container_name: jenkins
+    image: jenkins-ansible
+    build:
+      context: jenkins-ansible
+      dockerfile: Dockerfile.jenkins-ansible
+
+    networks:
+      - net
+
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+
+    volumes:
+      - /home/jenkins/jenkins-docker/jenkins-data:/var/jenkins_home
+
+  remote-host:
+    container_name: remote-host
+    image: remote-host
+    build:
+      context: centos
+      dockerfile: Dockerfile.remote-host
+
+    networks:
+      - net
+
+
+networks:
+  net:  # Networks section (no trailing colon here)
+
+volumes:
+  jenkins-data:  # Volumes section

@@ -1,0 +1,37 @@
+FROM ubuntu:20.04
+
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install OpenSSH and necessary tools
+RUN apt-get update && apt-get install -y \
+    openssh-server \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create jenkins user
+RUN useradd -m -s /bin/bash jenkins \
+    && echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Setup SSH
+RUN mkdir -p /var/run/sshd \
+    && mkdir -p /home/jenkins/.ssh \
+    && chmod 700 /home/jenkins/.ssh
+
+# Configure SSH
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config \
+    && sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+
+# Copy entrypoint script
+COPY entrypoint-remote.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Expose SSH port
+EXPOSE 22
+
+# Set default user
+USER jenkins
+WORKDIR /home/jenkins
+
+# Entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

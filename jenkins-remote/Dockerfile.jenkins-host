@@ -1,0 +1,22 @@
+FROM jenkins/jenkins:lts-jdk17
+
+
+USER root
+
+
+RUN apt-get update && apt-get install -y \
+    openssh-client \
+    docker.io \
+    sudo
+
+
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+
+USER jenkins
+
+
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

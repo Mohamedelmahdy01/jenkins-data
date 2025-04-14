@@ -1,0 +1,17 @@
+FROM jenkins/jenkins:lts-jdk17
+# Switch to root to perform installation and file operations
+USER root
+
+# Create the .ssh directory in Jenkins home if it doesn't exist
+RUN mkdir -p /var/jenkins_home/.ssh && chown -R jenkins:jenkins /var/jenkins_home
+
+# Copy the private key into the Jenkins container
+# Make sure the file "jenkins-remote-key" exists in your build context
+COPY jenkins-remote-key /var/jenkins_home/.ssh/remote-key
+
+# Set proper permissions on the private key
+RUN chown jenkins:jenkins /var/jenkins_home/.ssh/remote-key && \
+    chmod 600 /var/jenkins_home/.ssh/remote-key
+
+# Switch back to the Jenkins user
+USER jenkins

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  jenkins:
+    container_name: jenkins-host
+    build: 
+      context: .
+      dockerfile: Dockerfile.jenkins-host
+    networks:
+      - net
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - /home/jenkins/jenkins-data/jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  remote-host:
+    container_name: remote-host
+    build:
+      context: .
+      dockerfile: Dockerfile.remote-host
+    networks:
+      - net
+    volumes:
+      - ./ssh-keys:/home/jenkins/.ssh
+    depends_on:
+      - jenkins
+    restart: unless-stopped
+
+networks:
+  net:
+    driver: bridge
+
+volumes:
+  jenkins-data:

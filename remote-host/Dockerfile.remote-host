@@ -1,0 +1,32 @@
+FROM almalinux:9
+
+USER root
+
+RUN dnf install -y openssh-server openssh-clients passwd && \
+    dnf clean all
+
+RUN useradd -m -s /bin/bash remote_user && \
+    mkdir /home/remote_user/.ssh && \
+    chmod 700 /home/remote_user/.ssh
+
+# Set password for remote_user (for lab purposes only - remove or secure in production)
+RUN echo "password" | passwd --stdin remote_user
+
+COPY jenkins-remote-key.pub /home/remote_user/.ssh/authorized_keys
+
+RUN chown -R remote_user:remote_user /home/remote_user/.ssh && \
+    chmod 600 /home/remote_user/.ssh/authorized_keys
+
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config && \
+    echo "AllowUsers remote_user" >> /etc/ssh/sshd_config
+
+RUN ssh-keygen -A && \
+    chmod 600 /etc/ssh/sshd_config
+
+**RUN systemctl restart sshd**  # Add this line to restart sshd
+
+# Switch to the 'remote_user' to run the SSH daemon (more secure)
+USER remote_user
+
+CMD ["/usr/sbin/sshd", "-D", "-e"]
