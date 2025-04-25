@@ -2,9 +2,18 @@ FROM almalinux:9
 
 USER root
 
-RUN dnf install -y openssh-server openssh-clients && \
+
+# Install all required packages (OpenSSH, MySQL Client, Python, AWS CLI dependencies)
+RUN dnf install -y openssh-server openssh-clients mysql unzip python3 && \
     dnf clean all
 
+# Install AWS CLI v2
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -rf awscliv2.zip aws
+
+# Setting up SSH users and keys
 RUN useradd -m -s /bin/bash remote_user && \
     mkdir /home/remote_user/.ssh && \
     chmod 700 /home/remote_user/.ssh
@@ -14,6 +23,7 @@ COPY jenkins-remote-key.pub /home/remote_user/.ssh/authorized_keys
 RUN chown -R remote_user:remote_user /home/remote_user/.ssh && \
     chmod 600 /home/remote_user/.ssh/authorized_keys
 
+# Configure SSH settings
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
     sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config && \
     echo "AllowUsers remote_user" >> /etc/ssh/sshd_config

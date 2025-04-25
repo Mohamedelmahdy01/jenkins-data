@@ -15,8 +15,8 @@ services:
     volumes:
       - /home/jenkins/jenkins-docker/jenkins-data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker  # Optional: Mount Docker CLI binary if not in the image
-
+      #- /usr/bin/docker:/usr/bin/docker  # Optional: Mount Docker CLI binary if not in the image
+    
   remote-host:
     container_name: remote-host
     image: remote-host
@@ -28,8 +28,27 @@ services:
       - net
 
 
+  db:
+    container_name: mysql_db
+    image: mysql:5.7
+    secrets:
+      - mysql_root_password
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+    networks:
+      - net
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
 networks:
   net:  # Networks section (no trailing colon here)
 
 volumes:
-  jenkins-data:  # Volumes section
+  jenkins-data: 
+  mysql_data:
+secrets:
+  mysql_root_password:
+    file: /home/jenkins/jenkins-data/db/mysql_root_password.txt  # Store password in an external file
+
+    

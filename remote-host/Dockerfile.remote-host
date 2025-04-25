@@ -27,6 +27,6 @@ RUN ssh-keygen -A && \
 **RUN systemctl restart sshd**  # Add this line to restart sshd
 
 # Switch to the 'remote_user' to run the SSH daemon (more secure)
-USER remote_user
+#USER remote_user
 
 CMD ["/usr/sbin/sshd", "-D", "-e"]
